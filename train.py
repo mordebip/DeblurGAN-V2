@@ -157,8 +157,10 @@ class Trainer:
 
     def _init_params(self):
         self.criterionG, criterionD = get_loss(self.config['model'])
+        #生成器参数默认无梯度
         self.netG, netD = get_nets(self.config['model'])
         self.netG.cuda()
+        #获取判别器网络
         self.adv_trainer = self._get_adversarial_trainer(self.config['model']['d_name'], netD, criterionD)
         self.model = get_model(self.config['model'])
         self.optimizer_G = self._get_optim(filter(lambda p: p.requires_grad, self.netG.parameters()))
@@ -168,14 +170,14 @@ class Trainer:
 
 
 if __name__ == '__main__':
-    with open('config/config.yaml', 'r') as f:
+    with open('config/config.yaml', 'r',encoding='utf-8') as f:
         config = yaml.load(f)
-
     batch_size = config.pop('batch_size')
     get_dataloader = partial(DataLoader, batch_size=batch_size, num_workers=cpu_count(), shuffle=True, drop_last=True)
 
     datasets = map(config.pop, ('train', 'val'))
     datasets = map(PairedDataset.from_config, datasets)
+    # 转成dataloader
     train, val = map(get_dataloader, datasets)
     trainer = Trainer(config, train=train, val=val)
     trainer.train()

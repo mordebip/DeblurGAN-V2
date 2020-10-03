@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 import aug
 
-
+# 根据config中设置的bound对数据进行采样
 def subsample(data: Iterable, bounds: Tuple[float, float], hash_fn: Callable, n_buckets=100, salt='', verbose=True):
     data = list(data)
     buckets = split_into_buckets(data, n_buckets=n_buckets, salt=salt, hash_fn=hash_fn)
@@ -28,18 +28,18 @@ def subsample(data: Iterable, bounds: Tuple[float, float], hash_fn: Callable, n_
         logger.info(msg)
     return np.array([sample for bucket, sample in zip(buckets, data) if lower_bound <= bucket < upper_bound])
 
-
+#文件名进行16进制编码,作为索引
 def hash_from_paths(x: Tuple[str, str], salt: str = '') -> str:
     path_a, path_b = x
     names = ''.join(map(os.path.basename, (path_a, path_b)))
     return sha1(f'{names}_{salt}'.encode()).hexdigest()
 
-
+#根据文件名hash值分箱采样
 def split_into_buckets(data: Iterable, n_buckets: int, hash_fn: Callable, salt=''):
     hashes = map(partial(hash_fn, salt=salt), data)
     return np.array([int(x, 16) % n_buckets for x in hashes])
 
-
+# H*W*C
 def _read_img(x: str):
     img = cv2.imread(x)
     if img is None:
@@ -104,6 +104,7 @@ class PairedDataset(Dataset):
     def __len__(self):
         return len(self.data_a)
 
+    # 读取两张图片存储在字典中
     def __getitem__(self, idx):
         a, b = self.data_a[idx], self.data_b[idx]
         if not self.preload:
@@ -111,13 +112,16 @@ class PairedDataset(Dataset):
         a, b = self.transform_fn(a, b)
         if self.corrupt_fn is not None:
             a = self.corrupt_fn(a)
+        #转维度C*H*W
         a, b = self._preprocess(a, b)
         return {'a': a, 'b': b}
 
     @staticmethod
     def from_config(config):
         config = deepcopy(config)
+        print(config['files_a'])
         files_a, files_b = map(lambda x: sorted(glob(config[x], recursive=True)), ('files_a', 'files_b'))
+        #数据增强
         transform_fn = aug.get_transforms(size=config['size'], scope=config['scope'], crop=config['crop'])
         normalize_fn = aug.get_normalize()
         corrupt_fn = aug.get_corrupt_function(config['corrupt'])
@@ -125,6 +129,7 @@ class PairedDataset(Dataset):
         hash_fn = hash_from_paths
         # ToDo: add more hash functions
         verbose = config.get('verbose', True)
+        print(len(files_b), len(files_a))
         data = subsample(data=zip(files_a, files_b),
                          bounds=config.get('bounds', (0, 1)),
                          hash_fn=hash_fn,

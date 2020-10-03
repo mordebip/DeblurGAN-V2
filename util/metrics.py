@@ -45,7 +45,7 @@ def SSIM(img1, img2):
     ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
     return ssim_map.mean()
 
-
+#img about 255
 def PSNR(img1, img2):
     mse = np.mean((img1 / 255. - img2 / 255.) ** 2)
     if mse == 0:

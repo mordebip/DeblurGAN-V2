@@ -38,12 +38,14 @@ class PerceptualLoss():
                 break
         return model
 
+    # use ImageNet采用的标准化方法
     def initialize(self, loss):
         with torch.no_grad():
             self.criterion = loss
             self.contentFunc = self.contentFunc()
             self.transform = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
+    # first transform -1~1 to 0~1, second normalize it
     def get_loss(self, fakeIm, realIm):
         fakeIm = (fakeIm + 1) / 2.0
         realIm = (realIm + 1) / 2.0
@@ -274,7 +276,7 @@ class DiscLossWGANGP(DiscLossLS):
         gradient_penalty = self.calc_gradient_penalty(net, realB.data, fakeB.data)
         return self.loss_D + gradient_penalty
 
-
+#获取生成器损失以及判别器损失,content_loss / disc_loss
 def get_loss(model):
     if model['content_loss'] == 'perceptual':
         content_loss = PerceptualLoss()

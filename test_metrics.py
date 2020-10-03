@@ -19,8 +19,8 @@ from models.networks import get_generator
 
 def get_args():
 	parser = argparse.ArgumentParser('Test an image')
-	parser.add_argument('--img_folder', required=True, help='GoPRO Folder')
-	parser.add_argument('--weights_path', required=True, help='Weights path')
+	parser.add_argument('--img_folder', default='./data/GOPRO/GOPRO_3840FPS_AVG_3-21', help='GoPRO Folder')
+	parser.add_argument('--weights_path', default='best_fpn.h5', help='Weights path')
 
 	return parser.parse_args()
 
@@ -30,7 +30,7 @@ def prepare_dirs(path):
 		shutil.rmtree(path)
 	os.makedirs(path)
 
-
+#去读对应清晰路径文件
 def get_gt_image(path):
 	dir, filename = os.path.split(path)
 	base, seq = os.path.split(dir)

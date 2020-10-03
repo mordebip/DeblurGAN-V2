@@ -3,13 +3,13 @@ project: deblur_gan
 experiment_desc: fpn
 
 train:
-  files_a: &FILES_A /datasets/my_dataset/**/*.jpg
-  files_b: *FILES_A
+  files_a: ./data/GOPRO/GOPRO_3840FPS_AVG_3-21/train/blur/**/*.png
+  files_b: ./data/GOPRO/GOPRO_3840FPS_AVG_3-21/train/sharp/**/*.png
   size: &SIZE 256
   crop: random
   preload: &PRELOAD false
   preload_size: &PRELOAD_SIZE 0
-  bounds: [0, .9]
+  # bounds: [0, .9]
   scope: geometric
   corrupt: &CORRUPT
     - name: cutout
@@ -26,16 +26,16 @@ train:
     - name: rgb_shift
     - name: hsv_shift
     - name: sharpen
-
+# 仅图像处理以及裁剪方式不同
 val:
-  files_a: *FILES_A
-  files_b: *FILES_A
+  files_a: ./data/GOPRO/GOPRO_3840FPS_AVG_3-21/test/blur/**/*.png
+  files_b: ./data/GOPRO/GOPRO_3840FPS_AVG_3-21/test/sharp/**/*.png
   size: *SIZE
   scope: geometric
   crop: center
   preload: *PRELOAD
   preload_size: *PRELOAD_SIZE
-  bounds: [.9, 1]
+  # bounds: [.9, 1]
   corrupt: *CORRUPT
 
 phase: train
@@ -46,13 +46,13 @@ model:
   d_name: double_gan # may be no_gan, patch_gan, double_gan, multi_scale
   d_layers: 3
   content_loss: perceptual
-  adv_lambda: 0.001
+  adv_lambda: 0.01    #0.01
   disc_loss: wgan-gp
   learn_residual: True
   norm_layer: instance
   dropout: True
 
-num_epochs: 200
+num_epochs: 200     # 300
 train_batches_per_epoch: 1000
 val_batches_per_epoch: 100
 batch_size: 1
@@ -60,9 +60,9 @@ image_size: [256, 256]
 
 optimizer:
   name: adam
-  lr: 0.0001
+  lr: 0.00001
 scheduler:
   name: linear
-  start_epoch: 50
+  start_epoch: 50    # 150
   min_lr: 0.0000001
 

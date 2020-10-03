@@ -318,6 +318,6 @@ def get_discriminator(model_config):
 
     return model_d
 
-
+#输出是nn.Parallel()后的结果，因此直接进行计算即可
 def get_nets(model_config):
     return get_generator(model_config), get_discriminator(model_config)

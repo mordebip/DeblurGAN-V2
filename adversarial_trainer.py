@@ -16,6 +16,7 @@ class GANFactory:
     # A Template Method:
 
     def create_model(gan_id, net_d=None, criterion=None):
+        #类里面重新定义了子类
         if gan_id not in GANFactory.factories:
             GANFactory.factories[gan_id] = \
                 eval(gan_id + '.Factory()')
@@ -23,7 +24,7 @@ class GANFactory:
 
     create_model = staticmethod(create_model)
 
-
+# 基类构建单个loss,区分loos_d以及loss_g
 class GANTrainer(object):
     def __init__(self, net_d, criterion):
         self.net_d = net_d
@@ -75,7 +76,7 @@ class SingleGAN(GANTrainer):
         @staticmethod
         def create(net_d, criterion): return SingleGAN(net_d, criterion)
 
-
+# TODO
 class DoubleGAN(GANTrainer):
     def __init__(self, net_d, criterion):
         GANTrainer.__init__(self, net_d, criterion)
