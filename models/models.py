@@ -1,7 +1,6 @@
 import numpy as np
 import torch.nn as nn
 from skimage.measure import compare_ssim as SSIM
-# from skimage.metrics import structural_similarity as SSIM
 
 from util.metrics import PSNR
 
@@ -17,7 +16,6 @@ class DeblurModel(nn.Module):
         inputs, targets = inputs.cuda(), targets.cuda()
         return inputs, targets
 
-    # 注意此处仅可以计算Batchsize == 1否则会出现问题
     def tensor2im(self, image_tensor, imtype=np.uint8):
         image_numpy = image_tensor[0].cpu().float().numpy()
         image_numpy = (np.transpose(image_numpy, (1, 2, 0)) + 1) / 2.0 * 255.0
@@ -27,10 +25,9 @@ class DeblurModel(nn.Module):
         inp = self.tensor2im(inp)
         fake = self.tensor2im(output.data)
         real = self.tensor2im(target.data)
-        #data all in [0~255] H*W*C
         psnr = PSNR(fake, real)
         ssim = SSIM(fake, real, multichannel=True)
-        vis_img = np.hstack((inp, fake, real))   #第二位进行拼接
+        vis_img = np.hstack((inp, fake, real))
         return psnr, ssim, vis_img
 
 

@@ -2,7 +2,7 @@ from typing import List
 
 import albumentations as albu
 
-#图片的几何变换用于数据增强
+#去除变换
 def get_transforms(size: int, scope: str = 'geometric', crop='random'):
     augs = {'strong': albu.Compose([albu.HorizontalFlip(),
                                     albu.ShiftScaleRotate(shift_limit=0.0, scale_limit=0.2, rotate_limit=20, p=.4),
@@ -35,7 +35,7 @@ def get_transforms(size: int, scope: str = 'geometric', crop='random'):
                'center': albu.CenterCrop(size, size, always_apply=True)}[crop]
     pad = albu.PadIfNeeded(size, size)
 
-    pipeline = albu.Compose([aug_fn, crop_fn, pad], additional_targets={'target': 'image'})
+    pipeline = albu.Compose([crop_fn, pad], additional_targets={'target': 'image'})   #裁剪加拼接，不进行变换
 
     def process(a, b):
         r = pipeline(image=a, target=b)
@@ -43,7 +43,7 @@ def get_transforms(size: int, scope: str = 'geometric', crop='random'):
 
     return process
 
-#from 0~1 to -1~1
+
 def get_normalize():
     normalize = albu.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     normalize = albu.Compose([normalize], additional_targets={'target': 'image'})
@@ -76,7 +76,7 @@ def _resolve_aug_fn(name):
     }
     return d[name]
 
-#图像侵蚀增强
+
 def get_corrupt_function(config: List[dict]):
     augs = []
     for aug_params in config:
